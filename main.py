@@ -11,7 +11,58 @@ import datetime
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WattScope")
+# ... après "app = FastAPI(title="WattScope")"
 
+# Créer les tables et données de test si la DB est vide
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    if db.query(Foyer).count() == 0:
+        # Générer les données de test automatiquement
+        import random
+        from datetime import date, timedelta
+        
+        regions = ["Yaoundé", "Douala", "Bafoussam", "Garoua", "Maroua"]
+        logements = ["Studio", "Appartement", "Villa"]
+        foyers_list = []
+        
+        for i in range(1, 11):
+            f = Foyer(
+                nom_utilisateur=f"Foyer_{i}",
+                region=random.choice(regions),
+                type_logement=random.choice(logements),
+                nombre_habitants=random.randint(1, 8)
+            )
+            db.add(f)
+            db.commit()
+            db.refresh(f)
+            foyers_list.append(f)
+        
+        start_date = date(2025, 1, 1)
+        for foyer in foyers_list:
+            conso_base = random.uniform(5, 25)
+            for j in range(100):
+                jour = start_date + timedelta(days=j)
+                temperature = round(random.uniform(22, 36), 1)
+                coupure = random.choices([0, 30, 60, 120, 240], weights=[60, 20, 10, 7, 3])[0]
+                index_compteur = round(conso_base + (temperature - 25) * 0.3 + random.uniform(-2, 2), 2)
+                index_compteur = max(index_compteur, 1)
+                cout = round(index_compteur * random.choice([75, 85, 95]), 0)
+                r = ReleveQuotidien(
+                    foyer_id=foyer.id,
+                    date_releve=jour,
+                    index_compteur=index_compteur,
+                    duree_coupure_minutes=coupure,
+                    temperature_exterieure=temperature,
+                    cout_estime_fcfa=cout
+                )
+                db.add(r)
+            db.commit()
+        db.close()
+        print("✅ Données de test générées automatiquement")
+    else:
+        db.close()
 # Pas besoin de Jinja2Templates ni de dossier templates
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 
