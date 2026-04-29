@@ -1,22 +1,21 @@
-import datetime
+# models.py
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
+import datetime
 
-
-class Foyer(Base):
+class Client(Base):
     __tablename__ = "foyers"
 
     id = Column(Integer, primary_key=True, index=True)
     nom_utilisateur = Column(String, unique=True, nullable=False)
-    region = Column(String, default="Yaounde")
+    region = Column(String, default="Yaoundé")
     type_logement = Column(String, default="Appartement")
     nombre_habitants = Column(Integer, default=1)
     date_inscription = Column(DateTime, default=datetime.datetime.utcnow)
 
-    releves = relationship("ReleveQuotidien", back_populates="foyer")
-    appareils = relationship("Appareil", back_populates="foyer")
-
+    releves = relationship("ReleveQuotidien", back_populates="foyer", lazy="selectin")
+    appareils = relationship("Appareil", back_populates="foyer", lazy="selectin")
 
 class ReleveQuotidien(Base):
     __tablename__ = "releves_quotidiens"
@@ -29,8 +28,7 @@ class ReleveQuotidien(Base):
     temperature_exterieure = Column(Float, nullable=True)
     cout_estime_fcfa = Column(Float, nullable=True)
 
-    foyer = relationship("Foyer", back_populates="releves")
-
+    foyer = relationship("Client", back_populates="releves")
 
 class Appareil(Base):
     __tablename__ = "appareils"
@@ -42,4 +40,4 @@ class Appareil(Base):
     heures_utilisation_jour = Column(Float)
     nombre_appareils = Column(Integer, default=1)
 
-    foyer = relationship("Foyer", back_populates="appareils")
+    foyer = relationship("Client", back_populates="appareils")
