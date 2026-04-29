@@ -17,6 +17,7 @@ class Client(Base):
     releves = relationship("ReleveQuotidien", back_populates="foyer", lazy="selectin")
     appareils = relationship("Appareil", back_populates="foyer", lazy="selectin")
 
+
 class ReleveQuotidien(Base):
     __tablename__ = "releves_quotidiens"
 
@@ -29,6 +30,7 @@ class ReleveQuotidien(Base):
     cout_estime_fcfa = Column(Float, nullable=True)
 
     foyer = relationship("Client", back_populates="releves")
+
 
 class Appareil(Base):
     __tablename__ = "appareils"
