@@ -1,4 +1,4 @@
-# main.py - WattScope (Version finale avec confirmation et export Excel)
+# main.py - WattScope (Version finale corrigée)
 from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
@@ -26,7 +26,6 @@ def get_db():
 async def accueil(request: Request, db: Session = Depends(get_db), success: str = ""):
     clients = db.query(Foyer).all()
     
-    # Message de succès
     msg_success = ""
     if success:
         msg_success = f'<div class="alert alert-success alert-dismissible fade show" role="alert">{success}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
@@ -300,9 +299,7 @@ async def dashboard(request: Request, foyer_id: int, db: Session = Depends(get_d
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-lg-7">
-                    <div class="card shadow-sm"><div class="card-header bg-danger text-white">🔌 Consommation par Appareil (kWh/jour)</div><div class="card-body"><canvas id="appareilsChart" height="200"></canvas></div></div>
-                </div>
+                <div class="col-lg-7"><div class="card shadow-sm"><div class="card-header bg-danger text-white">🔌 Consommation par Appareil (kWh/jour)</div><div class="card-body"><canvas id="appareilsChart" height="200"></canvas></div></div></div>
                 <div class="col-lg-5">
                     <div class="card shadow-sm"><div class="card-header bg-warning text-dark">⚠️ Appareils Énergivores</div>
                         <div class="card-body">
@@ -355,11 +352,9 @@ async def export_excel(foyer_id: int, db: Session = Depends(get_db)):
     
     wb = openpyxl.Workbook()
     
-    # --- Feuille 1 : Relevés ---
     ws1 = wb.active
     ws1.title = "Relevés"
     
-    # Styles
     header_font = Font(bold=True, color="FFFFFF", size=12)
     header_fill = PatternFill(start_color="2c5364", end_color="2c5364", fill_type="solid")
     center_align = Alignment(horizontal="center")
@@ -378,11 +373,9 @@ async def export_excel(foyer_id: int, db: Session = Depends(get_db)):
         ws1.cell(row=row_idx, column=4, value=r.temperature_exterieure or 0)
         ws1.cell(row=row_idx, column=5, value=r.cout_estime_fcfa or 0)
     
-    # Ajuster largeur colonnes
     for col in range(1, 6):
         ws1.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 20
     
-    # --- Feuille 2 : Appareils ---
     ws2 = wb.create_sheet("Appareils")
     headers2 = ["Appareil", "Quantité", "Puissance (W)", "Heures/jour", "Consommation (kWh/jour)"]
     for col, header in enumerate(headers2, 1):
@@ -402,7 +395,6 @@ async def export_excel(foyer_id: int, db: Session = Depends(get_db)):
     for col in range(1, 6):
         ws2.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 20
     
-    # Sauvegarder dans un buffer
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
