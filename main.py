@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from database import engine, Base, SessionLocal
-from models import Client as Foyer, ReleveQuotidien, Appareil
+from models import Foyer, ReleveQuotidien, Appareil
 from analysis import get_dataframe_from_db, basic_stats, regression_temperature
 import datetime
 import io
